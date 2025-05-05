@@ -1,6 +1,7 @@
 import time
 import re
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from .config import settings
 
@@ -22,3 +23,12 @@ def get_applicants_count(driver, job_url) -> int:
             last_exc = e
             time.sleep(settings.APPLICANT_DELAY)
     return None
+
+def normalize_job_url(raw_url: str) -> str:
+    parsed = urlparse(raw_url)
+    path = parsed.path
+    m = re.search(r"/jobs/view/(\d+)", path)
+    if m:
+        job_id = m.group(1)
+        return f"https://www.linkedin.com/jobs/view/{job_id}"
+    return f"{parsed.scheme}://{parsed.netloc}{path}"

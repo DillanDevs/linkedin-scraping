@@ -1,8 +1,7 @@
 from collections.abc import Iterable
 from typing import Optional
-
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
-
 from backend.models.job_listing import JobListing
 
 class JobRepository:
@@ -28,11 +27,23 @@ class JobRepository:
 
     def upsert_batch(self, records: Iterable[dict]) -> None:
         """
-        Inserta o actualiza (merge) una lista de registros de ofertas.
+        Inserta todos los registros, y en caso de conflicto sobre job_url,
+        actualiza el resto de columnas.
         """
-        for rec in records:
-            job = JobListing(**rec)
-            self.db.merge(job)
+        stmt = insert(JobListing).values(list(records))
+
+        update_cols = {
+            c.name: getattr(stmt.excluded, c.name)
+            for c in JobListing.__table__.columns
+            if c.name != "id"
+        }
+
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["job_url"], 
+            set_=update_cols
+        )
+
+        self.db.execute(stmt)
         self.db.commit()
 
     def delete(self, job_id: int) -> bool:

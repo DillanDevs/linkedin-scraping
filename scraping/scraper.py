@@ -2,7 +2,7 @@ import time
 from datetime import datetime, date
 from bs4 import BeautifulSoup
 import pandas as pd
-from .utils import get_applicants_count
+from .utils import get_applicants_count, normalize_job_url
 from .config import settings
 
 
@@ -42,7 +42,8 @@ def scrape_jobs(driver, keyword: str = "Python Developer") -> pd.DataFrame:
         title    = title_el.get_text(strip=True)
         company  = (card.select_one("h4.base-search-card__subtitle") or "").get_text(strip=True)
         location = (card.select_one("span.job-search-card__location") or "").get_text(strip=True)
-        job_url  = link_el["href"].strip()
+        raw_url = link_el["href"].strip()
+        job_url = normalize_job_url(raw_url)
 
         applicants = get_applicants_count(driver, job_url)
 

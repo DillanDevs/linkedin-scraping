@@ -13,9 +13,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
 settings = Settings()
-logger.info(f"DATABASE_URI leída: {settings.DATABASE_URL}")
+logger.info(f"DATABASE_URI read from environment")
 
-# Crear el engine sin abrir la conexión inmediatamente
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
@@ -23,7 +22,6 @@ engine = create_engine(
     max_overflow=10,
 )
 
-# Configurar sessionmaker
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
@@ -35,9 +33,9 @@ def init_db():
     from backend.db.base import Base
     try:
         Base.metadata.create_all(bind=engine)
-        logger.info("Tablas de la base de datos creadas o ya existentes.")
+        logger.info("Tables created successfully.")
     except OperationalError as e:
-        logger.error(f"Error al inicializar la base de datos: {e}")
+        logger.error(f"Error creating tables: {e}")
         raise
 
 
@@ -47,4 +45,4 @@ def get_db():
         yield db
     finally:
         db.close()
-        logger.info("Conexión a la base de datos cerrada.")
+        logger.info("Closed database session.")

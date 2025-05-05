@@ -86,9 +86,9 @@ def schedule_tasks() -> None:
     """
     scheduler = BlockingScheduler()
     scheduler.add_job(run_scrape, "cron", hour=1, minute=0)
-    scheduler.add_job(backup_db, "cron", hour=2, minute=0)
-    scheduler.add_job(cleanup_old_backups, "cron", hour=2, minute=15)
-    logger.info("Scheduler started: scrape@01:00, backup@02:00, cleanup@02:15")
+    scheduler.add_job(backup_db, "cron", hour=10, minute=54)
+    scheduler.add_job(cleanup_old_backups, "cron", hour=10, minute=55)
+    logger.info("Scheduler started: scrape@01:00, backup@10:54, cleanup@010:55")
     scheduler.start()
 
 
